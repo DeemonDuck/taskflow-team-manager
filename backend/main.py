@@ -1,10 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, engine
-from models import Base, User
-from schemas import UserCreate, UserLogin
-from auth import hash_password, verify_password, create_access_token
+from models import Base, User, Project
+from schemas import UserCreate, UserLogin, ProjectCreate
+from auth import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    verify_token
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,6 +23,32 @@ def get_db():
     finally:
         db.close()
 
+def get_current_user(
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail="Authorization header missing"
+        )
+
+    token = authorization.split(" ")[1]
+
+    payload = verify_token(token)
+
+    user = db.query(User).filter(
+        User.id == payload["user_id"]
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found"
+        )
+
+    return user
 
 @app.get("/")
 def home():
@@ -69,3 +100,41 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "access_token": token,
         "token_type": "bearer"
     }
+
+
+@app.post("/projects")
+def create_project(
+    project: ProjectCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    new_project = Project(
+        title=project.title,
+        description=project.description,
+        owner_id=current_user.id
+    )
+
+    db.add(new_project)
+    db.commit()
+    db.refresh(new_project)
+
+    return {
+        "message": "Project created successfully",
+        "project": {
+            "id": new_project.id,
+            "title": new_project.title
+        }
+    }
+
+@app.get("/projects")
+def get_projects(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    projects = db.query(Project).filter(
+        Project.owner_id == current_user.id
+    ).all()
+
+    return projects
