@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from database import SessionLocal, engine
 from models import Base, User, Project
 from schemas import UserCreate, UserLogin, ProjectCreate
@@ -14,7 +14,7 @@ from auth import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
+security = HTTPBearer()
 
 def get_db():
     db = SessionLocal()
@@ -23,18 +23,15 @@ def get_db():
     finally:
         db.close()
 
+
 def get_current_user(
-    authorization: str = Header(None),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ):
 
-    if not authorization:
-        raise HTTPException(
-            status_code=401,
-            detail="Authorization header missing"
-        )
+    token = credentials.credentials
 
-    token = authorization.split(" ")[1]
+    print("TOKEN:", token)
 
     payload = verify_token(token)
 
@@ -61,7 +58,10 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user.email).first()
 
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
 
     hashed_pw = hash_password(user.password)
 
@@ -81,13 +81,24 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 @app.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
 
-    db_user = db.query(User).filter(User.email == user.email).first()
+    db_user = db.query(User).filter(
+        User.email == user.email
+    ).first()
 
     if not db_user:
-        raise HTTPException(status_code=400, detail="Invalid email")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid email"
+        )
 
-    if not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Invalid password")
+    if not verify_password(
+        user.password,
+        db_user.password
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid password"
+        )
 
     token = create_access_token(
         data={
@@ -126,6 +137,7 @@ def create_project(
             "title": new_project.title
         }
     }
+
 
 @app.get("/projects")
 def get_projects(
