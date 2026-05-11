@@ -94,7 +94,7 @@ async function handleLogin(event) {
 
         localStorage.setItem('user', JSON.stringify({
             email: email,
-            role: 'member'
+            role: data.role
         }));
 
         showToast('Login successful!', 'success');
