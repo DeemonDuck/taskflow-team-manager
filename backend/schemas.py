@@ -14,3 +14,9 @@ class UserLogin(BaseModel):
 class ProjectCreate(BaseModel):
     title: str
     description: str
+
+class TaskCreate(BaseModel):
+    title: str
+    description: str
+    status: str
+    project_id: int

@@ -2,8 +2,13 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from database import SessionLocal, engine
-from models import Base, User, Project
-from schemas import UserCreate, UserLogin, ProjectCreate
+from models import Base, User, Project, Task
+from schemas import (
+    UserCreate,
+    UserLogin,
+    ProjectCreate,
+    TaskCreate
+)
 from auth import (
     hash_password,
     verify_password,
@@ -150,3 +155,49 @@ def get_projects(
     ).all()
 
     return projects
+@app.post("/tasks")
+def create_task(
+    task: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    project = db.query(Project).filter(
+        Project.id == task.project_id
+    ).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
+
+    new_task = Task(
+        title=task.title,
+        description=task.description,
+        status=task.status,
+        project_id=task.project_id
+    )
+
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+
+    return {
+        "message": "Task created successfully",
+        "task": {
+            "id": new_task.id,
+            "title": new_task.title,
+            "status": new_task.status
+        }
+    }
+
+@app.get("/tasks")
+def get_tasks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    tasks = db.query(Task).all()
+
+    return tasks
