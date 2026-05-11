@@ -2,14 +2,17 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from database import SessionLocal, engine
 from models import Base, User, Project, Task
+
 from schemas import (
     UserCreate,
     UserLogin,
     ProjectCreate,
     TaskCreate
 )
+
 from auth import (
     hash_password,
     verify_password,
@@ -20,6 +23,7 @@ from auth import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 security = HTTPBearer()
 
 app.add_middleware(
@@ -30,10 +34,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def get_db():
     db = SessionLocal()
+
     try:
         yield db
+
     finally:
         db.close()
 
@@ -44,8 +51,6 @@ def get_current_user(
 ):
 
     token = credentials.credentials
-
-    print("TOKEN:", token)
 
     payload = verify_token(token)
 
@@ -61,17 +66,41 @@ def get_current_user(
 
     return user
 
+
+def require_admin(
+    current_user: User = Depends(get_current_user)
+):
+
+    if current_user.role != "admin":
+
+        raise HTTPException(
+            status_code=403,
+            detail="Admin access required"
+        )
+
+    return current_user
+
+
 @app.get("/")
 def home():
-    return {"message": "TaskFlow Backend Running"}
+
+    return {
+        "message": "TaskFlow Backend Running"
+    }
 
 
 @app.post("/register")
-def register(user: UserCreate, db: Session = Depends(get_db)):
+def register(
+    user: UserCreate,
+    db: Session = Depends(get_db)
+):
 
-    existing_user = db.query(User).filter(User.email == user.email).first()
+    existing_user = db.query(User).filter(
+        User.email == user.email
+    ).first()
 
     if existing_user:
+
         raise HTTPException(
             status_code=400,
             detail="Email already registered"
@@ -79,27 +108,39 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
     hashed_pw = hash_password(user.password)
 
+    role = "admin" if "admin" in user.email else "member"
+
     new_user = User(
         name=user.name,
         email=user.email,
-        password=hashed_pw
+        password=hashed_pw,
+        role=role
     )
 
     db.add(new_user)
+
     db.commit()
+
     db.refresh(new_user)
 
-    return {"message": "User registered successfully"}
+    return {
+        "message": "User registered successfully",
+        "role": role
+    }
 
 
 @app.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
 
     db_user = db.query(User).filter(
         User.email == user.email
     ).first()
 
     if not db_user:
+
         raise HTTPException(
             status_code=400,
             detail="Invalid email"
@@ -109,6 +150,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         user.password,
         db_user.password
     ):
+
         raise HTTPException(
             status_code=400,
             detail="Invalid password"
@@ -123,7 +165,8 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
     return {
         "access_token": token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "role": db_user.role
     }
 
 
@@ -131,7 +174,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 def create_project(
     project: ProjectCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
 
     new_project = Project(
@@ -141,7 +184,9 @@ def create_project(
     )
 
     db.add(new_project)
+
     db.commit()
+
     db.refresh(new_project)
 
     return {
@@ -164,11 +209,13 @@ def get_projects(
     ).all()
 
     return projects
+
+
 @app.post("/tasks")
 def create_task(
     task: TaskCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_admin)
 ):
 
     project = db.query(Project).filter(
@@ -176,6 +223,7 @@ def create_task(
     ).first()
 
     if not project:
+
         raise HTTPException(
             status_code=404,
             detail="Project not found"
@@ -189,7 +237,9 @@ def create_task(
     )
 
     db.add(new_task)
+
     db.commit()
+
     db.refresh(new_task)
 
     return {
@@ -200,6 +250,7 @@ def create_task(
             "status": new_task.status
         }
     }
+
 
 @app.get("/tasks")
 def get_tasks(
