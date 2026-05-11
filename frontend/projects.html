@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - TaskFlow Team Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="dashboard.html" class="brand">
+                <div class="brand-icon">
+                    <i class="bi bi-kanban-fill"></i>
+                </div>
+                <span class="brand-text">TaskFlow</span>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="projects.html" class="nav-link active">
+                    <i class="bi bi-folder"></i>
+                    <span>Projects</span>
+                </a>
+                <a href="tasks.html" class="nav-link">
+                    <i class="bi bi-check2-square"></i>
+                    <span>Tasks</span>
+                </a>
+                <a href="team.html" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Team</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Account</div>
+                <a href="#" class="nav-link" onclick="logout(); return false;">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">AJ</div>
+                <div class="user-info">
+                    <div class="user-name">Alex Johnson</div>
+                    <span class="user-role badge bg-danger">Admin</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="navbar-content">
+                <div class="d-flex align-items-center">
+                    <button class="nav-btn me-3 d-lg-none" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div>
+                        <h2 class="page-title">Projects</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Projects</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="navbar-actions">
+                    <button class="nav-btn" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button class="nav-btn" title="Settings">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Stats Row -->
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card stat-card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon bg-primary-subtle text-primary me-3">
+                                <i class="bi bi-folder"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0" id="total-projects">0</h4>
+                                <small class="text-muted">Total Projects</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card stat-card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon bg-success-subtle text-success me-3">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0" id="active-projects">0</h4>
+                                <small class="text-muted">Active</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card stat-card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon bg-secondary-subtle text-secondary me-3">
+                                <i class="bi bi-archive"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0" id="completed-projects">0</h4>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search & Actions -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="search-box">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="form-control" id="project-search" placeholder="Search projects...">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                                        <i class="bi bi-plus-lg"></i>
+                                        New Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="row" id="projects-container">
+                <!-- Dynamically populated by JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state d-none">
+                <div class="empty-state-icon">
+                    <i class="bi bi-folder"></i>
+                </div>
+                <h4>No Projects Found</h4>
+                <p>Get started by creating your first project.</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                    <i class="bi bi-plus-lg"></i>
+                    Create Project
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Project Modal -->
+    <div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="create-project-form">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="project-title" class="form-label">Project Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="project-title" placeholder="Enter project title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="project-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="project-description" rows="3" placeholder="Enter project description"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="create-project-btn">Create Project</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Project Modal -->
+    <div class="modal fade" id="editProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="edit-project-form">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit-project-title" class="form-label">Project Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit-project-title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-project-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="edit-project-description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="edit-project-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/projects.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('mobile-overlay').classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,17 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+
+# Database
+*.db
+
+# VS Code
+.vscode/
+
+# Environment variables
 .env
-database.db
+
+# OS files
+.DS_Store
+Thumbs.db
