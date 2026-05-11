@@ -201,3 +201,29 @@ def get_tasks(
     tasks = db.query(Task).all()
 
     return tasks
+
+
+@app.get("/dashboard")
+def dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    total_projects = db.query(Project).count()
+
+    total_tasks = db.query(Task).count()
+
+    completed_tasks = db.query(Task).filter(
+        Task.status == "Completed"
+    ).count()
+
+    pending_tasks = db.query(Task).filter(
+        Task.status == "Pending"
+    ).count()
+
+    return {
+        "total_projects": total_projects,
+        "total_tasks": total_tasks,
+        "completed_tasks": completed_tasks,
+        "pending_tasks": pending_tasks
+    }
