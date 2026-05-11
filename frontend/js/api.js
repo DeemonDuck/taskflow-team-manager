@@ -3,7 +3,7 @@
  * Central API configuration and HTTP helpers for FastAPI backend integration
  */
 
-const API_BASE = "https://taskflow-team-manager-production.up.railway.app";
+const API_BASE = "https://taskflow-team-manager-production-b89e.up.railway.app";
 
 /**
  * Generic API request wrapper with JWT auth
